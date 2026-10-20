@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WILLZH Portfolio</title>
+<meta name="description" content="WILLZH — portfolio of mobile-industry market analysis × data tool development">
+<style>
+:root{
+  --bg:#f6f5f1;--surface:#ffffff;--ink:#1b1d21;--muted:#62666e;--line:#e3e1da;
+  --accent:#1f6f5c;--accent-soft:#e3f0ec;--tag:#f0eee8;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121417;--surface:#1a1d21;--ink:#ecebe7;--muted:#9a9ea6;--line:#2b2f35;
+  --accent:#5cc3a6;--accent-soft:#1d2e29;--tag:#23272c;}}
+:root[data-theme="dark"]{--bg:#121417;--surface:#1a1d21;--ink:#ecebe7;--muted:#9a9ea6;--line:#2b2f35;--accent:#5cc3a6;--accent-soft:#1d2e29;--tag:#23272c;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header.top{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+.logo{font-weight:800;letter-spacing:.04em}
+nav a{color:var(--muted);margin-left:18px;font-size:.93rem}
+nav a:hover{color:var(--ink)}
+nav a.lang{border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:.82rem}
+.hero{padding:56px 0 40px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.8rem;letter-spacing:.18em;color:var(--accent);font-weight:700;text-transform:uppercase}
+.hero h1{font-size:clamp(1.9rem,5vw,3rem);line-height:1.2;margin:12px 0 16px;font-weight:800;letter-spacing:-.01em}
+.hero p{color:var(--muted);max-width:660px;font-size:1.05rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:32px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:1.35rem}
+.stat span{color:var(--muted);font-size:.85rem}
+section{padding:48px 0}
+h2{font-size:1.5rem;margin-bottom:6px}
+.sub{color:var(--muted);margin-bottom:28px}
+.project{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px;margin-bottom:24px}
+.p-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-start}
+.p-kind{font-size:.78rem;color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.project h3{font-size:1.3rem;margin:4px 0 10px}
+.project p.lead{color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:20px}
+.cols h4{font-size:.85rem;color:var(--muted);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
+.cols ul{padding-left:1.1em}
+.cols li{margin-bottom:4px;font-size:.95rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+.tag{background:var(--tag);border-radius:999px;padding:3px 11px;font-size:.8rem;color:var(--muted)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-block;padding:8px 16px;border-radius:10px;font-size:.9rem;font-weight:600;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+:root[data-theme="dark"] .btn.primary{color:#0f1a17}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0f1a17}}
+.note{margin-top:16px;font-size:.82rem;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:8px 12px}
+.arch{margin-top:20px;overflow-x:auto}
+.arch svg{max-width:100%;height:auto;display:block}
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.skill{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.skill h4{margin-bottom:6px}
+.skill p{color:var(--muted);font-size:.9rem}
+footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:.9rem}
+.theme-btn{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:4px 10px;cursor:pointer;margin-left:18px;font:inherit;font-size:.85rem}
+.rs{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:32px}
+.rs h4.rh{font-size:.82rem;letter-spacing:.14em;font-weight:800;text-transform:uppercase;border-bottom:2px solid var(--ink);padding-bottom:4px;margin:0 0 12px}
+.rs .blk{margin-bottom:24px}
+.rs .role{font-weight:700;font-size:1rem}.rs .org{color:var(--accent);font-size:.9rem;font-weight:600}
+.rs .meta{color:var(--muted);font-size:.8rem;margin:2px 0 6px}
+.rs ul{padding-left:1.1em}.rs li{font-size:.9rem;margin-bottom:3px}
+.rs .ach{display:flex;gap:10px;margin-bottom:12px}.rs .ach i{color:var(--accent);font-style:normal}
+.rs .ach b{display:block;font-size:.92rem}.rs .ach span{color:var(--muted);font-size:.82rem}
+.rs .sk-t{color:var(--accent);font-weight:700;font-size:.85rem;margin:8px 0 2px}.rs .sk-p{font-size:.85rem;color:var(--muted)}
+@media (max-width:760px){.rs{grid-template-columns:1fr;padding:20px}}
+@media (max-width:560px){nav a{margin-left:10px}.project{padding:20px}.theme-btn{margin-left:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">WILLZH</div>
+    <nav><a href="#projects">Projects</a><a href="#writing">Writing</a><a href="#skills">Skills</a><a href="#resume">Resume</a><a href="#contact">Contact</a><a class="lang" href="https://willzhma.github.io/Portfolio/" hreflang="zh-Hant" lang="zh-Hant">CN</a><button class="theme-btn" id="themeBtn" aria-label="Toggle light / dark theme">◐</button></nav>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow">Market Analysis × Data Tools</div>
+    <h1>Turning market data<br>into tools people use every day</h1>
+    <p>With an academic background in Mathematics and Information Management, I bring nearly six years of professional experience in market analysis, competitor analysis, and business intelligence.</p>
+    <div class="stats">
+      <div class="stat"><b>~6 yrs</b><span>Mobile-industry market analysis</span></div>
+      <div class="stat"><b>4</b><span>Data tools built independently</span></div>
+      <div class="stat"><b>3</b><span>Third-party market data sources integrated</span></div>
+    </div>
+  </div>
+
+  <section id="projects">
+    <h2>Projects</h2>
+    <p class="sub">Work-tool demos are rebuilt with fictional data and contain no company or licensed data.</p>
+
+    <!-- Project 1 -->
+    <article class="project">
+      <div class="p-head">
+        <div>
+          <div class="p-kind">Work tool · Desktop app</div>
+          <h3>Phone Product Timeline</h3>
+        </div>
+        <div class="btns"><a class="btn primary" href="demos/phone-timeline.html">Open interactive demo (generation comparison) →</a></div>
+      </div>
+      <p class="lead">Analysed smartphone price increases across product generations by consolidating launch dates, starting prices, and specifications from multiple brands and comparing models with equivalent specifications.</p>
+      <div class="cols">
+        <div><h4>Problems solved</h4><ul><li>Competitor information is scattered across websites and reports, so every comparison means re-searching</li><li>Price changes across generations are hard to compare quickly</li><li>Colleagues' computers are locked down and can't install complex software</li></ul></div>
+        <div><h4>Approach &amp; highlights</h4><ul><li>Price band × time matrix view; click a model for its full specs</li><li>Side-by-side spec comparison of any two phones, plus the starting-price change from the previous generation</li><li>Packaged with Python as a single .exe — double-click to run, no installation</li><li>Data is exchanged as standardized JS files, so non-engineering colleagues can update it too</li></ul></div>
+      </div>
+      <div class="tags"><span class="tag">Python</span><span class="tag">pywebview</span><span class="tag">HTML / CSS / JS</span><span class="tag">PyInstaller packaging</span><span class="tag">Local server</span></div>
+      <div class="note">pywebview was chosen over PyQt to avoid commercial licensing restrictions; the tool runs entirely locally and needs no outbound connection, so it works inside the company's firewall environment.</div>
+    </article>
+
+    <!-- Project 2 -->
+    <article class="project">
+      <div class="p-head">
+        <div>
+          <div class="p-kind">Work tool · Data integration</div>
+          <h3>Market Intelligence</h3>
+        </div>
+        <div class="btns"><a class="btn primary" href="demos/market-intel.html">Open interactive demo →</a></div>
+      </div>
+      <p class="lead">Consolidates the Excel reports of three third-party market research firms, unifies fields and definitions, then offers cross-filtering by brand, price band, and quarter with trend charts — replacing the manual quarterly reconciliation.</p>
+      <div class="cols">
+        <div><h4>Problems solved</h4><ul><li>The three data sources differ in format, brand naming, and categories</li><li>Every quarterly update meant rebuilding a pivot analysis</li><li>Numbers that differ between sources were hard to view side by side</li></ul></div>
+        <div><h4>Approach &amp; highlights</h4><ul><li>Normalizes multi-source Excel files into a single data format</li><li>Brand share, price-band structure, and quarterly trends on one page</li><li>Switch the data source to compare differences</li><li><b>Industry news ticker</b>: Excel connects to RSS through a web link and Power Query reads it as a refreshable connection</li><li>An "Update news" button on the HTML page refreshes the news with one click each day once a folder is connected</li><li>Runs locally on 127.0.0.1, so data never leaves the computer</li></ul></div>
+      </div>
+      <div class="tags"><span class="tag">Python</span><span class="tag">Excel data cleaning</span><span class="tag">Power Query</span><span class="tag">RSS</span><span class="tag">HTML / JS visualization</span><span class="tag">Data normalization</span></div>
+    </article>
+
+    <!-- Project 4 -->
+    <article class="project">
+      <div class="p-head">
+        <div>
+          <div class="p-kind">Work tool · Data tracking</div>
+          <h3>Socket Tracker</h3>
+        </div>
+        <div class="btns"><a class="btn primary" href="demos/socket-tracker.html">Open interactive demo →</a></div>
+      </div>
+      <p class="lead">Tracks each model's sales period, chip, and supplier by brand and product line (Socket), showing who used which chip and when as month-by-month color blocks, with yearly and overall totals calculated automatically.</p>
+      <div class="cols">
+        <div><h4>Problems solved</h4><ul><li>Product-line generation changes and chip-supplier switches were scattered across several sheets, making the timing hard to see at a glance</li><li>Every monthly update required confirming exactly what changed this time</li><li>Data had to move back and forth between Excel and the tool</li></ul></div>
+        <div><h4>Approach &amp; highlights</h4><ul><li>Wide-table view merges color blocks by month automatically, with suppliers distinguished by color</li><li>Multiple views: long table, chip comparison, brand and supplier share</li><li>Shows added / deleted / modified differences before you confirm an update</li><li>Excel import and export, plus paste-from-Excel import</li></ul></div>
+      </div>
+      <div class="tags"><span class="tag">HTML / CSS / JS</span><span class="tag">SheetJS</span><span class="tag">ExcelJS</span><span class="tag">Data diff</span></div>
+    </article>
+
+    <!-- Project 3 -->
+    <article class="project">
+      <div class="p-head">
+        <div>
+          <div class="p-kind">Personal project · Full-stack website</div>
+          <h3>Industry Structure Watch</h3>
+        </div>
+        <div class="btns"><a class="btn primary" href="../demos/stock-dashboard/index.html">Open interactive demo (Chinese interface) →</a><a class="btn" href="https://github.com/WILLZHMA/stock-dashboard" target="_blank" rel="noopener">GitHub</a></div>
+      </div>
+      <p class="lead">A personal Taiwan-stock data site that looks at industry structure rather than stock tips: sector indices, institutional investor flows, ETF holdings, and monthly revenue rankings. Its tagline is <i>Market Pulse, Not Advice</i>.</p>
+      <div class="cols">
+        <div><h4>Features</h4><ul><li>Panels for the Taiwan market, sector indices, and institutional net buying / selling</li><li>ETF holdings scraper (each fund company's site assessed one by one for scrapability)</li><li>Monthly revenue rankings and a watchlist</li><li>Google OAuth login with allowlist access control</li></ul></div>
+        <div><h4>Pitfalls along the way</h4><ul><li>Data errors caused by inconsistent field-name capitalization in the FinMind API</li><li>SSL certificate problems on the TPEx (Taipei Exchange) site</li><li>Moving sessions into MySQL to deploy on Cloud Run</li><li>Migrating from AWS EC2 to a self-hosted Ubuntu mini PC with Cloudflare Tunnel</li></ul></div>
+      </div>
+      <div class="arch">
+        <svg viewBox="0 0 720 110" role="img" aria-label="Architecture: data sources to FastAPI to MySQL to frontend, exposed through Cloudflare Tunnel">
+          <style>.b{fill:var(--tag);stroke:var(--line)}.t{fill:var(--ink);font-size:13px;font-family:inherit}.s{fill:var(--muted);font-size:11px}.a{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#h)}</style>
+          <defs><marker id="h" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="var(--accent)"/></marker></defs>
+          <rect class="b" x="4" y="25" width="140" height="60" rx="10"/><text class="t" x="74" y="52" text-anchor="middle">Data sources</text><text class="s" x="74" y="70" text-anchor="middle">FinMind · TWSE · TPEx</text>
+          <rect class="b" x="194" y="25" width="140" height="60" rx="10"/><text class="t" x="264" y="52" text-anchor="middle">FastAPI</text><text class="s" x="264" y="70" text-anchor="middle">Scheduled fetch · API</text>
+          <rect class="b" x="384" y="25" width="140" height="60" rx="10"/><text class="t" x="454" y="52" text-anchor="middle">MySQL</text><text class="s" x="454" y="70" text-anchor="middle">Market data · sessions</text>
+          <rect class="b" x="574" y="25" width="140" height="60" rx="10"/><text class="t" x="644" y="52" text-anchor="middle">Frontend + OAuth</text><text class="s" x="644" y="70" text-anchor="middle">Cloudflare Tunnel</text>
+          <path class="a" d="M146 55 H190"/><path class="a" d="M336 55 H380"/><path class="a" d="M526 55 H570"/>
+        </svg>
+      </div>
+      <div class="tags"><span class="tag">FastAPI</span><span class="tag">MySQL</span><span class="tag">Google OAuth</span><span class="tag">Web Scraping</span><span class="tag">Ubuntu Server</span><span class="tag">Cloudflare Tunnel</span></div>
+    </article>
+  </section>
+
+  <section id="writing">
+    <h2>Writing</h2>
+    <p class="sub">I keep writing industry analysis on Vocus (方格子) under the name "Willzh的分享". Webpages can be updated and tools can be built, but ideas and inspiration last. The articles are written in Traditional Chinese.</p>
+    <article class="project">
+      <div class="p-head">
+        <div>
+          <div class="p-kind">Vocus · Article series · 2026-09</div>
+          <h3>AI Industry: Exploration and Speculation (series)</h3>
+        </div>
+        <div class="btns"><a class="btn primary" href="https://vocus.cc/article/6aa8f602fd897800013dc90a" target="_blank" rel="noopener">Read the series →</a></div>
+      </div>
+      <p class="lead">Starting from 2025–2026 AI capital spending, the series asks whether industry revenue reflects real value or over-speculation. It works layer by layer through infrastructure, semiconductors, and the transformation of traditional hardware makers, and distills two reusable industry-analysis frameworks (specialized vs. general-purpose, addition vs. subtraction).</p>
+      <div class="cols">
+        <div><h4>Articles in the series</h4><ul><li><a href="https://vocus.cc/article/6aa8ef84fd897800013c3786" target="_blank" rel="noopener">AI infrastructure layer: the big four — Microsoft, Google, CoreWeave, AWS</a><br><span style="opacity:.75;font-size:.92em">Do cloud giants' in-house chips threaten NVIDIA? Energy and the labor market are the underrated systemic risks</span></li><li><a href="https://vocus.cc/article/6aa93d4efd897800017332d7" target="_blank" rel="noopener">NVIDIA: industry competitiveness and sustainability analysis</a><br><span style="opacity:.75;font-size:.92em">AI chip market size and the in-house chip threat, and how "circular financing" may mask real end demand</span></li><li><a href="https://vocus.cc/article/6aa8977afd8978000184f8b5" target="_blank" rel="noopener">Merry Electronics (美律實業): a transformation analysis</a><br><span style="opacity:.75;font-size:.92em">From contract manufacturing to brand: co-creating with chipmakers and end brands to become a spec-defining "component brand"</span></li><li><a href="https://vocus.cc/article/6aa94462fd89780001750d04" target="_blank" rel="noopener">Foxlink (正崴精密): the road to transformation</a><br><span style="opacity:.75;font-size:.92em">From component contract manufacturing to "intelligent power management solutions" supplier, moving into AI data centers</span></li><li><a href="https://vocus.cc/article/6aa9495efd89780001765e22" target="_blank" rel="noopener">Specialized vs. general-purpose, and how addition and subtraction add value to an industry</a><br><span style="opacity:.75;font-size:.92em">Two reusable frameworks for industry analysis</span></li></ul></div>
+      </div>
+      <div class="tags"><span class="tag">Industry analysis</span><span class="tag">Analytical frameworks</span><span class="tag">AI industry</span><span class="tag">Writing</span></div>
+    </article>
+  </section>
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <p class="sub">Tools built by someone who understands the market are the ones that actually get used.</p>
+    <div class="skills">
+      <div class="skill"><h4>Market &amp; competitor analysis</h4><p>Familiar with major third-party market research data; brand, price-band, and shipment-structure analysis.</p></div>
+      <div class="skill"><h4>Data preparation &amp; normalization</h4><p>Multi-source Excel cleaning, field alignment, and repeatable data-refresh workflows.</p></div>
+      <div class="skill"><h4>Tool development</h4><p>Python, FastAPI, MySQL, HTML/CSS/JS, desktop packaging, and website deployment.</p></div>
+      <div class="skill"><h4>AI-assisted development</h4><p>AI-assisted architecture planning and implementation, iterating quickly on real needs and user feedback.</p></div>
+    </div>
+  </section>
+
+  <section id="resume">
+    <h2>Resume</h2>
+    <p class="sub">Data &amp; Business Analyst | M.S. in Information Management</p>
+    <div class="rs">
+      <div>
+        <div class="blk"><h4 class="rh">Summary</h4>
+          <p style="font-size:.9rem;color:var(--muted)">Data and business analytics professional with nearly six years of hands-on experience, currently an on-site Data &amp; Business Analyst on a semiconductor company's mobile PM team, specializing in cleaning and analyzing global smartphone market data. Built automated data-processing workflows with Power BI dashboards and Excel + Power Query / M that cut the team's repetitive manual work by about 40%, and developed data applications with Python, PyWebView, HTML / CSS / JavaScript. Also built and maintained a government agricultural information platform.</p></div>
+        <div class="blk"><h4 class="rh">Experience</h4>
+          <div class="role">On-site Data &amp; Business Analyst | Mobile PM Department</div>
+          <div class="org">Semiconductor industry (on-site via staffing agency · 500+ employees)</div>
+          <div class="meta">Oct 2021 – Present · Hsinchu, Taiwan</div>
+          <ul><li>Integrate and standardize global smartphone market research data from BCI, GfK, IDC, and other sources using Excel and Power Query / M, creating repeatable refresh workflows that reduce repetitive manual processing by approximately 40%.</li>
+          <li>Lead the architecture and visual design of the department's Power BI business intelligence platform, using DAX to analyze global brand market share, 4G/5G trends, and regional performance, giving managers timely market insight.</li>
+          <li>Develop data-analysis interfaces and features around user needs, building interactive charts and lightweight analysis tools with Python, PyWebView, HTML / CSS / JavaScript to make information easier to access and visualize.</li>
+          <li>Regularly consolidate market analysis results, reports, and business presentations to support the PM team's market comparisons and decision discussions.</li>
+          <li>Work with internal stakeholders to clarify reporting needs, improve data presentation, and maintain the team's business intelligence workflow.</li></ul>
+          <div class="role" style="margin-top:16px">Data Analyst / Information Systems Specialist</div>
+          <div class="org">Feng Chia University GIS Center (digital content industry, 30–100 employees) · Yunlin County Government Agriculture Department on-site project</div>
+          <div class="meta">Oct 2020 – Oct 2021 · Douliu, Yunlin County, Taiwan</div>
+          <ul><li>Independently handled data preparation, statistical analysis, and chart design, integrating production area, yield, geographic distribution, market-price, and import/export price data into an agricultural information platform for government users and young farmers.</li>
+          <li>Contributed to platform design, warranty support, maintenance, and administration, and helped with platform training, presentation preparation, and agriculture-related operational support.</li></ul></div>
+        <div class="blk"><h4 class="rh">Education</h4>
+          <div class="role">M.S. in Information Management</div><div class="org">National Yunlin University of Science and Technology</div><div class="meta">Sep 2017 – Jun 2019</div>
+          <div class="role" style="margin-top:10px">B.S. in Applied Mathematics; Minor in Information Management</div><div class="org">Tunghai University</div><div class="meta">Sep 2013 – Jun 2017</div></div>
+        <div class="blk"><h4 class="rh">Projects</h4>
+          <div class="role">Stock Dashboard | Taiwan Market Structure</div>
+          <div class="meta">Oct 2025 – Present · <a href="https://github.com/WILLZHMA/stock-dashboard" target="_blank" rel="noopener">github.com/WILLZHMA/stock-dashboard</a></div>
+          <ul><li>Connected public data sources including TWSE, TPEx, and FinMind to build a historical market database with scheduled syncing.</li>
+          <li>Used FastAPI to build query APIs covering indices, industry sectors, monthly revenue, stock history, institutional net buying / selling, and ETFs, with a front end that presents the market information.</li>
+          <li>Published the full code and architecture on GitHub as evidence of data collection, database, API, and dashboard integration skills.</li></ul>
+          <div class="role" style="margin-top:14px">Industry Analysis Writing</div>
+          <div class="meta">Vocus (Traditional Chinese) · <a href="https://vocus.cc/article/6aa8f602fd897800013dc90a" target="_blank" rel="noopener">AI industry series</a></div>
+          <ul><li>Write independent industry analyses on semiconductor and AI infrastructure competition, business-model shifts, and corporate transformation, using structured frameworks to explain market dynamics.</li></ul></div>
+      </div>
+      <div>
+        <div class="blk"><h4 class="rh">Key Achievements</h4>
+          <div class="ach"><i>◆</i><div><b>Streamlined repetitive workflows</b><span>Cut data-processing time by 40%, improving efficiency.</span></div></div>
+          <div class="ach"><i>◆</i><div><b>Real-time data insights</b><span>Built global market share analysis with data presented in real time.</span></div></div>
+          <div class="ach"><i>◆</i><div><b>Automatic update feature</b><span>Delivered auto-update capability for the market analysis platform, raising product-development efficiency by 50%.</span></div></div>
+          <div class="ach"><i>◆</i><div><b>Automated data cleaning</b><span>Automated the data-cleaning process, saving 40% of manual time.</span></div></div></div>
+        <div class="blk"><h4 class="rh">Skills</h4>
+          <div class="sk-t">Core competencies</div><div class="sk-p">Sales &amp; market analytics (regional sales trends, market share, competitor analysis, variance and trend analysis); BI &amp; reporting; data quality &amp; process improvement; business support (requirements clarification, management reporting, cross-functional decision support)</div>
+          <div class="sk-t">Tools</div><div class="sk-p">BI / reporting: Power BI (DAX, Power Query / M), Excel, Tableau, VBA, HTML, CSS, JavaScript, PyWebView; databases &amp; data applications: Python, MySQL, R, SPSS, MATLAB; AI-assisted analysis and development: ChatGPT, Gemini, Claude, DeepSeek</div>
+          <div class="sk-t">Mathematics</div><div class="sk-p">Discrete mathematics, linear algebra, mathematical and logical analysis, numerical analysis, advanced calculus, complex analysis</div></div>
+        <div class="blk"><h4 class="rh">Awards</h4>
+          <div class="ach"><i>◆</i><div><b>CUTE National Business Administration Innovation Service Planning Competition | University Division finals, 3rd place</b><span>During graduate studies · 2019</span></div></div></div>
+        <div class="blk"><h4 class="rh">Find Me Online</h4>
+          <div class="sk-p"><a href="https://vocus.cc/article/6aa8f602fd897800013dc90a" target="_blank" rel="noopener">Vocus: AI industry series (Traditional Chinese)</a><br><a href="https://github.com/WILLZHMA" target="_blank" rel="noopener">GitHub: WILLZHMA</a></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <p>Contact: <a href="mailto:max.is.so.so@gmail.com">max.is.so.so@gmail.com</a> · <a href="https://github.com/WILLZHMA" target="_blank" rel="noopener">GitHub</a></p>
+    <p style="margin-top:6px">© 2026 WILLZH · Work-tool demos use fictional data</p>
+  </footer>
+</div>
+<script>
+(function(){var r=document.documentElement,b=document.getElementById('themeBtn');
+b.addEventListener('click',function(){var d=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);r.dataset.theme=d?'light':'dark';});})();
+</script>
+</body>
+</html>
