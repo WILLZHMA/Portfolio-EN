@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Socket Tracker - Data Entry Demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--panel:#fff;--ink:#1f2430;--sub:#6b7280;--line:#e5e2db;--navy:#233348;--navy-light:#3a4d68;--amber:#d98e2c;--amber-soft:#fbe8cc;--head:#f6f5ef;
+--va:#ff7a29;--va-soft:#ffe3c7;--vb:#3465ad;--vb-soft:#dbe6f5;--vc:#0f8bff;--vc-soft:#dcebfb;--vd:#d92b2b;--vd-soft:#fbdcdc;--vx:#8a8a8a;--vx-soft:#e6e6e6;
+--mono:'SF Mono','Consolas','Menlo',monospace;--sans:-apple-system,'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:#1b1e24;color:var(--ink);font-family:var(--sans);font-size:13px}
+.wrap{position:relative;padding:14px 18px 40px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.main-col{width:100%;min-width:0}
+
+/* ---- Top title bar ---- */
+.panel-head{margin:-16px -16px 14px;padding:14px 18px;background:var(--head);border-radius:10px 10px 0 0;border-bottom:5px double var(--navy)}
+.title-legend-row{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+.panel-head h1{margin:0;font-size:19px;letter-spacing:.2px}
+.legend{display:flex;gap:16px;font-size:12px;font-weight:600;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.notice{font-size:12px;color:var(--sub);margin:0 0 12px}
+
+/* ---- Toolbar / filter bar ---- */
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.toolbar button{padding:7px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:12.5px;cursor:pointer;font-family:var(--sans)}
+.toolbar button:hover{background:#f3f2ee}
+.toolbar button.active{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:700}
+.toolbar .sp{flex:1}
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;background:var(--head);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:10px}
+.filter-bar.left{justify-content:flex-start}
+.filter-bar select,.filter-bar input[type=text]{padding:6px 9px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;font-family:var(--sans);background:#fff;color:var(--ink)}
+.filter-bar input[type=text]{flex:1;min-width:180px}
+.timeline-label{font-size:12.5px;color:var(--sub);font-weight:600;white-space:nowrap}
+.clear-filter{padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--sub);font-size:12.5px;cursor:pointer;font-family:var(--sans)}
+.clear-filter:hover{background:#f3f2ee}
+
+/* ---- Table ---- */
+.tbl-scroll{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:calc(100vh - 290px);background:#fff}
+.tbl-scroll table{border-collapse:separate;border-spacing:0;font-size:11.5px;width:100%}
+.tbl-scroll th,.tbl-scroll td{border-right:1px solid #e5e2db;border-bottom:1px solid #e5e2db;padding:5px 6px;text-align:center;white-space:nowrap;background:#fff}
+.tbl-scroll thead th{background:#fafaf8;color:#000;font-weight:700;position:sticky;z-index:4;height:28px}
+.tbl-scroll thead tr:nth-child(1) th{top:0}
+.tbl-scroll thead tr:nth-child(2) th{top:28px;background:#f0efe9}
+.tbl-scroll thead tr:nth-child(3) th{top:56px;background:#f5f4ef;font-weight:600;color:var(--sub)}
+.tbl-scroll thead tr:nth-child(1) th.coloem,.tbl-scroll thead tr:nth-child(1) th.colsocket{z-index:6}
+.col-oem{position:sticky;left:0;width:76px;min-width:76px;max-width:76px;background:#fafaf8!important;font-weight:700;color:var(--navy);z-index:2}
+.col-socket{position:sticky;left:76px;width:110px;min-width:110px;max-width:110px;text-align:left!important;font-weight:600;z-index:2;white-space:normal;line-height:1.3}
+.tbl-scroll th.month{min-width:58px}
+.year-hd{border-left:2px solid var(--navy)!important}
+.year-total-cell{background:#f5f3ea!important;border-left:2px solid var(--navy)!important;min-width:64px;font-weight:700}
+.grand-total-cell{background:#e9e6da!important;min-width:76px;font-weight:700;white-space:normal}
+.empty-cell{color:#c9c6bd}
+.total-row td{background:#fafaf8!important;font-weight:700}
+.total-row .col-oem-span{position:sticky;left:0;z-index:2}
+.cell-VA{background:var(--va)!important;color:#fff}.cell-VB{background:var(--vb)!important;color:#fff}.cell-VC{background:var(--vc)!important;color:#fff}.cell-VD{background:var(--vd)!important;color:#fff}.cell-VX{background:var(--vx)!important;color:#fff}
+.rpt-clickable{cursor:pointer;transition:filter .12s;font-weight:600;line-height:1.25}
+.rpt-clickable:hover{filter:brightness(1.12)}
+.cellchip{font-size:10px;font-family:var(--mono);opacity:.9;display:block;font-weight:400}
+.chip{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10.5px;font-family:var(--mono);font-weight:700}
+.chip.VA{background:var(--va-soft);color:var(--va)}.chip.VB{background:var(--vb-soft);color:var(--vb)}.chip.VC{background:var(--vc-soft);color:var(--vc)}.chip.VD{background:var(--vd-soft);color:var(--vd)}.chip.VX{background:var(--vx-soft);color:var(--vx)}
+.tbl-scroll td.left,.tbl-scroll th.left{text-align:left}
+.act{cursor:pointer;color:#a33;margin:0 4px;font-size:12px}.act.edit{color:#2a62b3}
+.vshare-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid #e5e2db;min-width:220px}
+.vshare-seg{color:#fff;font-size:10.5px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+/* ---- Floating form (collapsed by default, opens at top right) ---- */
+.side-col{position:absolute;top:20px;right:28px;width:310px;z-index:60;pointer-events:none}
+.side-col>*{pointer-events:auto}
+.reopen-fab{display:block;margin-left:auto;padding:8px 16px;border-radius:20px;border:0;background:var(--navy);color:#fff;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2);font-family:var(--sans)}
+.reopen-fab:hover{background:var(--navy-light)}
+.floating-form{padding:16px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.form-body{overflow-y:auto}
+.drag-handle{display:flex;align-items:center;justify-content:space-between;margin:-16px -16px 10px;padding:10px 14px;background:var(--navy);color:#fff;border-radius:10px 10px 0 0;cursor:move;user-select:none}
+.drag-handle h2{margin:0;font-size:12.5px;color:#fff}
+.min-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:22px;height:22px;border-radius:5px;font-size:13px;cursor:pointer}
+.min-btn:hover{background:rgba(255,255,255,.3)}
+.floating-form label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+.floating-form input,.floating-form select{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:var(--sans);background:#fcfcfb;color:var(--ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.datefield{border:1px solid var(--line);border-radius:8px;padding:10px 10px 8px;margin-top:8px;background:#fbfbfa}
+.datefield .lbl{font-size:11.5px;color:var(--sub);font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.stepper{width:26px;height:26px;border-radius:6px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-size:14px;line-height:1;padding:0;cursor:pointer}
+.stepper:hover{background:var(--navy-light)}
+.vendor-toggle{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.vendor-toggle button{flex:1 1 auto;min-width:58px;padding:6px;border:1px solid var(--line);border-radius:6px;background:#fcfcfb;color:var(--ink);font-size:12px;cursor:pointer;font-family:var(--sans)}
+.vendor-toggle button.active{color:#fff;font-weight:700}
+.vendor-toggle button[data-v=VA].active{background:var(--va);border-color:var(--va)}
+.vendor-toggle button[data-v=VB].active{background:var(--vb);border-color:var(--vb)}
+.vendor-toggle button[data-v=VC].active{background:var(--vc);border-color:var(--vc)}
+.vendor-toggle button[data-v=VD].active{background:var(--vd);border-color:var(--vd)}
+.vendor-toggle button[data-v=VX].active{background:var(--vx);border-color:var(--vx)}
+.addbtn{width:100%;margin-top:14px;padding:10px;border:0;border-radius:8px;background:var(--amber);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer}
+.cancelbtn{width:100%;margin-top:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--sub);cursor:pointer}
+.hint{background:#f6f5ef;border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--sub);font-size:12px;margin-top:12px;line-height:1.6}
+.monthly-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.monthly-grid div{font-size:10.5px;color:var(--sub)}
+.monthly-grid input{padding:4px 6px!important;font-size:12px!important}
+
+/* ---- Modals ---- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.overlay[hidden]{display:none}
+.modal{background:#fff;color:var(--ink);border-radius:12px;padding:20px 22px;width:min(760px,100%);max-height:85vh;overflow:auto}
+.modal h2{margin:0 0 6px}
+.modal-hint{color:var(--sub);font-size:12.5px;line-height:1.7}
+.modal textarea{width:100%;height:150px;font-family:var(--mono);font-size:12px;margin-top:10px;border:1px solid var(--line);border-radius:6px;padding:8px}
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.actions button{padding:8px 16px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.actions button.primary{background:var(--amber);border-color:var(--amber);color:#fff;font-weight:700}
+.diff-sec h3{font-size:13px;margin:14px 0 6px}
+.diff-row{padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:12.5px;line-height:1.5}
+.diff-add{background:#e2f3ea}.diff-del{background:#fbe4e1}.diff-chg{background:var(--amber-soft)}
+.diff-old{text-decoration:line-through;color:var(--sub)}
+.preview-tbl{width:100%;border-collapse:collapse;margin-top:10px;font-size:11.5px}
+.preview-tbl th,.preview-tbl td{border:1px solid var(--line);padding:4px 6px;text-align:left}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+@media(max-width:800px){.side-col{position:static;width:auto;padding:0 0 10px}.tbl-scroll{max-height:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+
+  <!-- Top right: add data (collapsed by default, draggable) -->
+  <div class="side-col" id="side-col">
+    <button class="reopen-fab" id="reopen-btn" onclick="restoreForm()">+ Add data</button>
+    <div class="card floating-form" id="float-form" style="display:none">
+      <div class="drag-handle" id="drag-handle">
+        <h2 id="form-title">Add a record</h2>
+        <span><span style="opacity:.6;letter-spacing:2px;margin-right:6px">⠿</span><button class="min-btn" onclick="minimizeForm()" title="Collapse">—</button></span>
+      </div>
+      <div class="form-body">
+        <label>Brand</label>
+        <select id="f-oem"></select>
+
+        <label>Socket (product-line code)</label>
+        <input id="f-socket" list="socket-list" placeholder="e.g. Line A1 (or pick one)">
+        <datalist id="socket-list"></datalist>
+
+        <div class="row2">
+          <div><label>Channel</label><select id="f-channel"><option>Offline</option><option>Online</option></select></div>
+          <div><label>Segment</label><input id="f-segment" list="segment-list" placeholder="e.g. High / Mid"><datalist id="segment-list"></datalist></div>
+        </div>
+
+        <div class="datefield">
+          <div class="lbl"><span>Start year / month</span><button class="stepper" onclick="bumpYear('s')" title="Add one more year">+</button></div>
+          <div class="row2"><select id="f-syear" onchange="onDateRangeChanged()"></select><select id="f-smonth" onchange="onDateRangeChanged()"></select></div>
+        </div>
+        <div class="datefield">
+          <div class="lbl"><span>End year / month <span style="font-weight:400;font-size:10.5px">(last month this model is sold)</span></span><button class="stepper" onclick="bumpYear('e')" title="Add one more year">+</button></div>
+          <div class="row2"><select id="f-eyear" onchange="onDateRangeChanged()"></select><select id="f-emonth" onchange="onDateRangeChanged()"></select></div>
+        </div>
+
+        <label>Model</label><input id="f-model" placeholder="e.g. A1-01">
+        <label>Chip</label><input id="f-chip" placeholder="e.g. Chip-11">
+        <label>Vendor</label>
+        <div class="vendor-toggle" id="vendor-toggle"></div>
+        <label>Quantity (Mu)</label>
+        <input id="f-vol" type="number" step="0.1" placeholder="e.g. 20">
+        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px;margin-top:4px">
+          <input type="checkbox" id="f-monthly-toggle" onchange="toggleMonthlyInput()" style="width:auto;margin:0">Enter quantities month by month (the view still shows the total)
+        </label>
+        <div id="monthly-vol-grid" style="display:none"></div>
+
+        <button class="addbtn" id="submit-btn" onclick="addEntry()">+ Add this entry</button>
+        <button class="cancelbtn" id="cancel-btn" onclick="cancelEdit()" style="display:none">Cancel editing</button>
+        <div class="hint">Each model automatically fills every month cell between its start and end. The quantity is split evenly across the months by default; tick "Enter quantities month by month" to set them individually. When entries overlap in the same month, the earlier one in the list is shown.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="card main-col" id="main-col">
+    <div class="panel-head">
+      <div class="title-legend-row">
+        <h1>Socket Tracker</h1>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <p class="notice">※ This page demonstrates data entry. Brands, product lines, models, chips, and quantities are all fictional; data lives only on this page and reverts to the sample data when you refresh. <a href="../../en/index.html" style="color:var(--amber)">← Back to portfolio</a></p>
+
+    <div class="toolbar">
+      <button class="active" id="tab-report" onclick="setTab('report')">Wide-table report</button>
+      <button id="tab-raw" onclick="setTab('raw')">Long-table raw data</button>
+      <button id="tab-chip" onclick="setTab('chip')">Chip comparison</button>
+      <button id="tab-oemvendor" onclick="setTab('oemvendor')">Brand vs. vendor</button>
+      <button id="tab-lastchange" onclick="setTab('lastchange')">Last changes</button>
+      <span class="sp"></span>
+      <button onclick="openUpdateDiff()">Update</button>
+      <button onclick="exportExcel()">↓ Export Excel</button>
+      <button onclick="triggerImport()">↑ Import Excel</button>
+      <button onclick="openPasteImport()">Paste import</button>
+      <button onclick="resetDemo()">Restore sample data</button>
+      <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)">
+    </div>
+
+    <div id="report-view">
+      <div class="filter-bar">
+        <select id="rpt-f-oem" onchange="renderReport()"></select>
+        <select id="rpt-f-socket" onchange="renderReport()"><option value="">All Sockets</option></select>
+        <span class="timeline-label">Year range</span>
+        <select id="report-year-from" onchange="renderReport()"></select>
+        <span class="timeline-label">to</span>
+        <select id="report-year-to" onchange="renderReport()"></select>
+        <button class="clear-filter" onclick="resetYearRange()">Show all</button>
+        <button class="clear-filter" onclick="exportReportCsv()">↓ Export table</button>
+      </div>
+      <div id="report-table-wrap" class="tbl-scroll"></div>
+    </div>
+
+    <div id="raw-view" style="display:none">
+      <div class="filter-bar left">
+        <select id="raw-f-oem" onchange="renderRawTable()"></select>
+        <select id="raw-f-vendor" onchange="renderRawTable()"></select>
+        <input type="text" id="raw-f-text" placeholder="Search Socket / model / chip" oninput="renderRawTable()">
+        <button class="clear-filter" onclick="clearRawFilter()">Clear filters</button>
+      </div>
+      <div class="tbl-scroll" id="raw-table-wrap"></div>
+    </div>
+
+    <div id="chip-view" style="display:none">
+      <div class="filter-bar left">
+        <select id="chip-f-vendor" onchange="renderChipView()"></select>
+        <input type="text" id="chip-f-text" placeholder="Search chip / Brand / Socket" oninput="renderChipView()">
+        <span class="timeline-label">Year range</span>
+        <select id="chip-f-yfrom" onchange="renderChipView()"></select><span class="timeline-label">to</span><select id="chip-f-yto" onchange="renderChipView()"></select>
+        <button class="clear-filter" onclick="clearChipFilter()">Clear filters</button>
+      </div>
+      <div class="tbl-scroll" id="chip-table-wrap"></div>
+    </div>
+
+    <div id="oemvendor-view" style="display:none">
+      <div class="filter-bar">
+        <span class="timeline-label">Year range</span>
+        <select id="oemv-f-yfrom" onchange="renderOemVendorView()"></select><span class="timeline-label">to</span><select id="oemv-f-yto" onchange="renderOemVendorView()"></select>
+        <button class="clear-filter" onclick="clearOemvFilter()">Show all</button>
+      </div>
+      <div class="tbl-scroll" id="oemvendor-table-wrap"></div>
+    </div>
+
+    <div id="lastchange-view" style="display:none"><div id="lastchange-wrap"></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="paste-overlay" hidden>
+  <div class="modal">
+    <h2>Paste import</h2>
+    <p class="modal-hint">Select all the data in Excel, copy it, and paste it into the box below.<br>The column order must be: Brand, Socket, Channel, Segment, Start year, Start month, End year, End month, Model, Chip, Vendor, Quantity (Mu). A header row is optional; the tool detects it automatically.<br><b>Note: pasting replaces ALL data currently in the tool.</b></p>
+    <textarea id="paste-textarea" placeholder="Paste here (Ctrl+V)…"></textarea>
+    <div class="actions"><button onclick="closePasteImport()">Cancel</button><button class="primary" onclick="runPasteImport()">Parse and import</button></div>
+    <div id="paste-preview"></div>
+  </div>
+</div>
+
+<div class="overlay" id="diff-overlay" hidden>
+  <div class="modal">
+    <h2>Changes in this update</h2>
+    <p class="modal-hint">First check what changed compared with the previous update. Press "Confirm update" once it looks right.</p>
+    <div id="diff-body"></div>
+    <div class="actions"><button onclick="closeUpdateDiff()">Cancel</button><button class="primary" onclick="confirmUpdateDiff()">✔ Confirm update</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ Fictional sample data (entirely fictional; does not correspond to any real brand or model) ============ */
+const VENDORS=['VA','VB','VC','VD','VX'];
+const VLABEL={VA:'Vendor A',VB:'Vendor B',VC:'Vendor C',VD:'Vendor D',VX:'Other'};
+const VENDOR_HEX={VA:'FF7A29',VB:'3465AD',VC:'0F8BFF',VD:'D92B2B',VX:'8A8A8A'};
+const BRANDS=['Brand A','Brand B','Brand C','Brand D','Brand E'];
+const vl=v=>VLABEL[v]||v;
+const SEED=[
+ // [Brand,Socket,Channel,Segment,sy,sm,ey,em,model,chip,vendor,vol]
+ ['Brand A','Line A1','Offline','Entry',2025,1,2025,6,'A1-01','Chip-11','VA',24],
+ ['Brand A','Line A1','Offline','Entry',2025,7,2026,3,'A1-02','Chip-12','VA',40],
+ ['Brand A','Line A1','Offline','Entry',2026,4,2026,12,'A1-03','Chip-21','VB',36],
+ ['Brand A','Line A2','Offline','Mid',2025,1,2025,9,'A2-01','Chip-31','VC',30],
+ ['Brand A','Line A2','Offline','Mid',2025,10,2026,8,'A2-02','Chip-22','VB',42],
+ ['Brand A','Line A3','Online','Mid',2025,3,2026,2,'A3-01','Chip-13','VA',33],
+ ['Brand B','Line B1','Offline','Entry',2025,1,2025,12,'B1-01','Chip-14','VA',48],
+ ['Brand B','Line B1','Offline','Entry',2026,1,2026,12,'B1-02','Chip-15','VA',52],
+ ['Brand B','Line B2','Offline','High',2025,2,2025,11,'B2-01','Chip-16','VA',27],
+ ['Brand B','Line B2','Offline','High',2025,12,2026,9,'B2-02','Chip-17','VA',30],
+ ['Brand B','Line B3','Online','Mid',2025,1,2025,10,'B3-01','Chip-23','VB',22],
+ ['Brand C','Line C1','Offline','Entry',2025,1,2025,8,'C1-01','Chip-11','VA',45],
+ ['Brand C','Line C1','Offline','Entry',2025,9,2026,6,'C1-02','Chip-24','VB',38],
+ ['Brand C','Line C2','Offline','High',2025,3,2025,12,'C2-01','Chip-25','VB',26],
+ ['Brand C','Line C2','Offline','High',2026,1,2026,10,'C2-02','Chip-16','VA',28],
+ ['Brand C','Line C3','Online','Mid',2025,1,2026,4,'C3-01','Chip-41','VD',12],
+ ['Brand D','Line D1','Online','Mid',2025,1,2025,9,'D1-01','Chip-18','VA',60],
+ ['Brand D','Line D1','Online','Mid',2025,10,2026,8,'D1-02','Chip-19','VA',66],
+ ['Brand D','Line D2','Offline','Entry',2025,1,2025,12,'D2-01','Chip-32','VC',35],
+ ['Brand D','Line D3','Online','High',2025,4,2026,3,'D3-01','Chip-1A','VA',24],
+ ['Brand E','Line E1','Offline','Mid',2025,1,2025,10,'E1-01','Chip-23','VB',20],
+ ['Brand E','Line E1','Offline','Mid',2025,11,2026,9,'E1-02','Chip-42','VD',18],
+ ['Brand E','Line E2','Offline','Entry',2025,2,2026,1,'E2-01','Chip-X1','VX',14]
+];
+const THIS_YEAR=new Date().getFullYear();
+let YEARS=[];for(let y=2025;y<=Math.max(THIS_YEAR,2026)+1;y++)YEARS.push(y);
+let seq=1;
+const mk=(r,upd)=>({id:seq++,oem:r[0],socket:r[1],channel:r[2],segment:r[3],sy:r[4],sm:r[5],ey:r[6],em:r[7],model:r[8],chip:r[9],vendor:r[10],vol:r[11],mv:null,action:'',updatedAt:upd||'2026-09-01'});
+let entries=SEED.map(r=>mk(r));
+let baseline=JSON.parse(JSON.stringify(entries));
+// Give the "Last changes" tab some sample content from the start
+baseline=baseline.filter(e=>e.model!=='B2-02'&&e.model!=='E2-01');
+baseline.find(e=>e.model==='A2-02').vol=38;
+let lastDiff=null;
+let editingId=null;
+
+const $=id=>document.getElementById(id);
+const ymi=(y,m)=>y*12+(m-1);
+const covers=(e,y,m)=>{const i=ymi(y,m);return i>=ymi(e.sy,e.sm)&&i<=ymi(e.ey,e.em)};
+const nMonths=e=>Math.max(1,ymi(e.ey,e.em)-ymi(e.sy,e.sm)+1);
+const volAt=(e,y,m)=>{if(!covers(e,y,m))return 0;if(e.mv)return +e.mv[y+'-'+m]||0;return e.vol/nMonths(e)};
+const volRange=(e,y0,y1)=>{let s=0;for(let y=y0;y<=y1;y++)for(let m=1;m<=12;m++)s+=volAt(e,y,m);return s};
+const r1=v=>Math.round(v*10)/10;
+const fmtV=v=>r1(v).toLocaleString('en-US',{maximumFractionDigits:1});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* ============ Static option setup ============ */
+function initStatic(){
+  $('legend').innerHTML=VENDORS.map(v=>`<span><span class="dot" style="background:#${VENDOR_HEX[v]}"></span>${VLABEL[v]}</span>`).join('');
+  const brandOpts=BRANDS.map(b=>`<option>${b}</option>`).join('');
+  $('f-oem').innerHTML=brandOpts;
+  $('rpt-f-oem').innerHTML='<option value="">All Brands</option>'+brandOpts;
+  $('raw-f-oem').innerHTML='<option value="">All Brands</option>'+brandOpts;
+  const vOpts='<option value="">All vendors</option>'+VENDORS.map(v=>`<option value="${v}">${VLABEL[v]}</option>`).join('');
+  $('raw-f-vendor').innerHTML=vOpts;$('chip-f-vendor').innerHTML=vOpts;
+  $('vendor-toggle').innerHTML=VENDORS.map((v,i)=>`<button data-v="${v}" class="${i===0?'active':''}">${VLABEL[v]}</button>`).join('');
+  document.querySelectorAll('.vendor-toggle button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.vendor-toggle button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+}
+const curVendor=()=>document.querySelector('.vendor-toggle button.active').dataset.v;
+const setVendor=v=>document.querySelectorAll('.vendor-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+
+/* ============ Form ============ */
+function fillYearSelect(sel,years,def){sel.innerHTML=years.map(y=>`<option ${y===def?'selected':''}>${y}</option>`).join('')}
+function fillMonthSelect(sel,def){let h='';for(let m=1;m<=12;m++)h+=`<option ${m===def?'selected':''}>${m}</option>`;sel.innerHTML=h}
+function initForm(){
+  fillYearSelect($('f-syear'),YEARS,THIS_YEAR);fillMonthSelect($('f-smonth'),1);
+  fillYearSelect($('f-eyear'),YEARS,THIS_YEAR);fillMonthSelect($('f-emonth'),3);
+}
+function bumpYear(w){
+  const sel=$(w==='s'?'f-syear':'f-eyear');let y=+sel.value+1;
+  if(!YEARS.includes(y)){YEARS.push(y);YEARS.sort((a,b)=>a-b)}
+  const sy=+$('f-syear').value,ey=+$('f-eyear').value;
+  fillYearSelect($('f-syear'),YEARS,sy);fillYearSelect($('f-eyear'),YEARS,ey);
+  sel.value=y;refreshYearSelects();onDateRangeChanged();
+}
+function formMonths(){const sy=+$('f-syear').value,sm=+$('f-smonth').value,ey=+$('f-eyear').value,em=+$('f-emonth').value;
+  const out=[];for(let i=ymi(sy,sm);i<=ymi(ey,em);i++)out.push({y:Math.floor(i/12),m:i%12+1});return out}
+function onDateRangeChanged(){if($('f-monthly-toggle').checked)buildMonthlyGrid()}
+function toggleMonthlyInput(){
+  const on=$('f-monthly-toggle').checked;$('monthly-vol-grid').style.display=on?'block':'none';
+  if(on)buildMonthlyGrid()}
+function buildMonthlyGrid(existing){
+  const ms=formMonths(),grid=$('monthly-vol-grid');
+  if(!ms.length){grid.innerHTML='<div class="hint">End date cannot be earlier than the start date</div>';return}
+  const total=+$('f-vol').value||0;
+  const per=Math.floor(total/ms.length*10)/10;let assigned=0;
+  grid.innerHTML='<div class="monthly-grid">'+ms.map((x,i)=>{
+    const key=x.y+'-'+x.m;let v;
+    if(existing&&existing[key]!=null)v=existing[key];
+    else if(total){v=i===ms.length-1?r1(total-assigned):per;assigned+=per}else v='';
+    return `<div>${x.y}/${x.m}<input class="monthly-vol-input" data-key="${key}" type="number" step="0.1" value="${v}" oninput="recalcMonthlyTotal()"></div>`}).join('')+
+    '</div><div style="font-size:12.5px;font-weight:600;margin-top:6px">Total: <span id="monthly-total">0</span> Mu</div>';
+  recalcMonthlyTotal()}
+function recalcMonthlyTotal(){let s=0;document.querySelectorAll('.monthly-vol-input').forEach(i=>s+=+i.value||0);s=Math.round(s*100)/100;
+  $('f-vol').value=s;const t=$('monthly-total');if(t)t.textContent=s}
+function collectMonthly(){const r={};document.querySelectorAll('.monthly-vol-input').forEach(i=>{const v=+i.value||0;if(v)r[i.dataset.key]=v});return r}
+
+function groupEntriesByBrand(){
+  const order=[],seen=new Set();entries.forEach(e=>{if(!seen.has(e.oem)){seen.add(e.oem);order.push(e.oem)}});
+  const idx={};order.forEach((o,i)=>idx[o]=i);
+  entries=entries.map((e,i)=>({e,i})).sort((a,b)=>idx[a.e.oem]-idx[b.e.oem]||a.i-b.i).map(x=>x.e)}
+const today=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`};
+
+function addEntry(){
+  const oem=$('f-oem').value,socket=$('f-socket').value.trim(),channel=$('f-channel').value,segment=$('f-segment').value.trim();
+  const sy=+$('f-syear').value,sm=+$('f-smonth').value,ey=+$('f-eyear').value,em=+$('f-emonth').value;
+  const model=$('f-model').value.trim(),chip=$('f-chip').value.trim(),vendor=curVendor();
+  let vol=+$('f-vol').value;
+  if(!socket){alert('Please enter a Socket');return}
+  if(!model){alert('Please enter a model');return}
+  if(ymi(ey,em)<ymi(sy,sm)){alert('End date cannot be earlier than the start date');return}
+  if(!(vol>0)){alert('Please enter a quantity (Mu)');return}
+  const mv=$('f-monthly-toggle').checked?collectMonthly():null;
+  const data={oem,socket,channel,segment,sy,sm,ey,em,model,chip,vendor,vol,mv,updatedAt:today()};
+  if(editingId!=null){const e=entries.find(x=>x.id===editingId);Object.assign(e,data,{action:'Edited'});toast('Entry updated');cancelEdit(true)}
+  else{entries.push({id:seq++,action:'Added',...data});toast('Added')}
+  groupEntriesByBrand();clearFormFields();render()}
+function clearFormFields(){$('f-model').value='';$('f-chip').value='';$('f-vol').value='';$('f-monthly-toggle').checked=false;$('monthly-vol-grid').style.display='none'}
+function editEntry(id){
+  const e=entries.find(x=>x.id===id);if(!e)return;editingId=id;restoreForm();
+  $('f-oem').value=e.oem;$('f-socket').value=e.socket;$('f-channel').value=e.channel||'Offline';$('f-segment').value=e.segment||'';
+  $('f-syear').value=e.sy;$('f-smonth').value=e.sm;$('f-eyear').value=e.ey;$('f-emonth').value=e.em;
+  $('f-model').value=e.model;$('f-chip').value=e.chip;setVendor(e.vendor);$('f-vol').value=e.vol;
+  $('f-monthly-toggle').checked=!!e.mv;$('monthly-vol-grid').style.display=e.mv?'block':'none';if(e.mv)buildMonthlyGrid(e.mv);
+  $('form-title').textContent='Edit record';$('submit-btn').textContent='✔ Save changes';$('cancel-btn').style.display='block'}
+function cancelEdit(silent){editingId=null;$('form-title').textContent='Add a record';$('submit-btn').textContent='+ Add this entry';$('cancel-btn').style.display='none';if(!silent)clearFormFields()}
+function deleteEntry(id){if(!confirm('Delete this entry?'))return;entries=entries.filter(e=>e.id!==id);render();toast('Deleted')}
+
+/* ===== Floating form: drag / collapse / restore ===== */
+(function(){
+  const panel=$('float-form'),handle=$('drag-handle');let dragging=false,ox=0,oy=0;
+  const start=(x,y)=>{if(window.innerWidth<=800)return;dragging=true;const r=panel.getBoundingClientRect();
+    ox=x-r.left;oy=y-r.top;panel.style.position='fixed';panel.style.width=r.width+'px';panel.style.left=r.left+'px';panel.style.top=r.top+'px';panel.style.zIndex=60};
+  const move=(x,y)=>{if(!dragging)return;panel.style.left=Math.max(0,x-ox)+'px';panel.style.top=Math.max(0,y-oy)+'px'};
+  handle.addEventListener('mousedown',e=>{if(e.target.closest('button'))return;start(e.clientX,e.clientY);e.preventDefault()});
+  window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));window.addEventListener('mouseup',()=>dragging=false);
+  handle.addEventListener('touchstart',e=>{const t=e.touches[0];start(t.clientX,t.clientY)},{passive:true});
+  window.addEventListener('touchmove',e=>{const t=e.touches[0];move(t.clientX,t.clientY)},{passive:true});
+  window.addEventListener('touchend',()=>dragging=false);
+})();
+function minimizeForm(){$('float-form').style.display='none';$('reopen-btn').style.display='block'}
+function restoreForm(){$('float-form').style.display='block';$('reopen-btn').style.display='none';adjustFormBodyHeight()}
+function adjustFormBodyHeight(){const h=$('drag-handle'),b=document.querySelector('#float-form .form-body');if(!h||!b)return;
+  b.style.maxHeight=Math.max(120,window.innerHeight*0.8-h.offsetHeight)+'px'}
+window.addEventListener('resize',adjustFormBodyHeight);
+
+/* ============ Tabs ============ */
+let curTab='report';
+function setTab(t){curTab=t;
+  ['report','raw','chip','oemvendor','lastchange'].forEach(k=>{$(k+'-view').style.display=k===t?'block':'none';$('tab-'+k).classList.toggle('active',k===t)});
+  render()}
+function refreshYearSelects(){
+  const ys=[...new Set([...YEARS,...entries.flatMap(e=>[e.sy,e.ey])])].sort((a,b)=>a-b);YEARS=ys;
+  [['report-year-from','report-year-to'],['chip-f-yfrom','chip-f-yto'],['oemv-f-yfrom','oemv-f-yto']].forEach(([a,b])=>{
+    const A=$(a),B=$(b),va=A.value,vb=B.value;
+    A.innerHTML=ys.map(y=>`<option>${y}</option>`).join('');B.innerHTML=A.innerHTML;
+    A.value=va&&ys.includes(+va)?va:ys[0];B.value=vb&&ys.includes(+vb)?vb:ys[ys.length-1]});
+  const sock=[...new Set(entries.map(e=>e.socket))];
+  $('socket-list').innerHTML=sock.map(s=>`<option value="${esc(s)}">`).join('');
+  $('segment-list').innerHTML=[...new Set(entries.map(e=>e.segment).filter(Boolean))].map(s=>`<option value="${esc(s)}">`).join('');
+  const rs=$('rpt-f-socket'),cur=rs.value;
+  rs.innerHTML='<option value="">All Sockets</option>'+[...new Set(entries.filter(e=>!$('rpt-f-oem').value||e.oem===$('rpt-f-oem').value).map(e=>e.socket))].map(s=>`<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('')}
+function resetYearRange(){$('report-year-from').value=YEARS[0];$('report-year-to').value=YEARS[YEARS.length-1];renderReport()}
+function clearRawFilter(){$('raw-f-oem').value='';$('raw-f-vendor').value='';$('raw-f-text').value='';renderRawTable()}
+function clearChipFilter(){$('chip-f-vendor').value='';$('chip-f-text').value='';$('chip-f-yfrom').value=YEARS[0];$('chip-f-yto').value=YEARS[YEARS.length-1];renderChipView()}
+function clearOemvFilter(){$('oemv-f-yfrom').value=YEARS[0];$('oemv-f-yto').value=YEARS[YEARS.length-1];renderOemVendorView()}
+function render(){refreshYearSelects();({report:renderReport,raw:renderRawTable,chip:renderChipView,oemvendor:renderOemVendorView,lastchange:renderLastChange})[curTab]()}
+
+/* ============ Wide-table report view ============ */
+function reportYears(){let a=+$('report-year-from').value,b=+$('report-year-to').value;if(a>b)[a,b]=[b,a];const o=[];for(let y=a;y<=b;y++)o.push(y);return o}
+const keyOf=e=>e.oem+'|'+e.socket;
+function reportKeys(){
+  const oemF=$('rpt-f-oem').value,sockF=$('rpt-f-socket').value;
+  let keys=[...new Set(entries.map(keyOf))];
+  if(oemF)keys=keys.filter(k=>k.split('|')[0]===oemF);
+  if(sockF)keys=keys.filter(k=>k.split('|')[1]===sockF);
+  return keys}
+function renderReport(){
+  const ys=reportYears(),keys=reportKeys();
+  if(!keys.length){$('report-table-wrap').innerHTML='<div style="padding:30px;color:#888">No matching data</div>';return}
+  const Q=['Q1','Q2','Q3','Q4'],p2=n=>String(n).padStart(2,'0');
+  let h='<table><thead><tr><th rowspan="3" class="coloem col-oem">Brand</th><th rowspan="3" class="colsocket col-socket" style="text-align:center!important">Socket</th>';
+  ys.forEach(y=>h+=`<th colspan="13" class="year-hd">${y}</th>`);
+  h+='<th rowspan="3" class="grand-total-cell">Total</th></tr><tr>';
+  ys.forEach(()=>{Q.forEach(q=>h+=`<th colspan="3">${q}</th>`);h+='<th rowspan="2" class="year-total-cell">Annual total</th>'});
+  h+='</tr><tr>';
+  ys.forEach(()=>{for(let m=1;m<=12;m++)h+=`<th class="month">${p2(m)}</th>`});
+  h+='</tr></thead><tbody>';
+  const colTot={},yTot={};let grand=0;
+  const oemRows={};keys.forEach(k=>{const o=k.split('|')[0];oemRows[o]=(oemRows[o]||0)+1});const shown={};
+  keys.forEach(k=>{
+    const [oem,sock]=k.split('|'),list=entries.filter(e=>keyOf(e)===k);
+    h+='<tr>';
+    if(!shown[oem]){shown[oem]=1;h+=`<td class="col-oem" rowspan="${oemRows[oem]}">${esc(oem)}</td>`}
+    h+=`<td class="col-socket">${esc(sock)}</td>`;
+    let rowTot=0;
+    ys.forEach(y=>{
+      let yt=0,m=1;
+      while(m<=12){
+        const e=list.find(x=>covers(x,y,m));
+        if(!e){h+='<td class="empty-cell">–</td>';m++;continue}
+        let span=1;while(m+span<=12&&list.find(x=>covers(x,y,m+span))===e)span++;
+        let v=0;for(let i=0;i<span;i++){v+=volAt(e,y,m+i);colTot[y+'-'+(m+i)]=(colTot[y+'-'+(m+i)]||0)+volAt(e,y,m+i)}
+        yt+=v;
+        h+=`<td colspan="${span}" class="cell-${e.vendor} rpt-clickable" onclick="editEntry(${e.id})" title="Click to edit">${esc(e.model)}<span class="cellchip">${esc(e.chip)} · ${fmtV(v)}Mu</span></td>`;
+        m+=span}
+      yTot[y]=(yTot[y]||0)+yt;rowTot+=yt;
+      h+=`<td class="year-total-cell">${yt?fmtV(yt)+' Mu':'–'}</td>`});
+    grand+=rowTot;h+=`<td class="grand-total-cell">${fmtV(rowTot)} Mu</td></tr>`});
+  h+='<tr class="total-row"><td colspan="2" class="col-oem-span" style="left:0;text-align:center">Grand total</td>';
+  ys.forEach(y=>{for(let m=1;m<=12;m++){const v=colTot[y+'-'+m];h+=`<td>${v?fmtV(v):''}</td>`}h+=`<td class="year-total-cell">${fmtV(yTot[y]||0)} Mu</td>`});
+  h+=`<td class="grand-total-cell">${fmtV(grand)} Mu</td></tr></tbody></table>`;
+  $('report-table-wrap').innerHTML=h}
+
+/* The currently filtered wide table → CSV (Brand / Socket / monthly quantities) */
+function exportReportCsv(){
+  const ys=reportYears(),keys=reportKeys();
+  const head=['Brand','Socket'];ys.forEach(y=>{for(let m=1;m<=12;m++)head.push(y+'-'+String(m).padStart(2,'0'))});
+  const rows=[head];
+  keys.forEach(k=>{const [oem,sock]=k.split('|'),list=entries.filter(e=>keyOf(e)===k),r=[oem,sock];
+    ys.forEach(y=>{for(let m=1;m<=12;m++){const e=list.find(x=>covers(x,y,m));r.push(e?(e.model+' ('+r1(volAt(e,y,m))+')'):'')}});rows.push(r)});
+  const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='socket_report_demo.csv';a.click()}
+
+/* ============ Long table ============ */
+function renderRawTable(){
+  const o=$('raw-f-oem').value,v=$('raw-f-vendor').value,t=$('raw-f-text').value.trim().toLowerCase();
+  const list=entries.filter(e=>(!o||e.oem===o)&&(!v||e.vendor===v)&&(!t||(e.socket+' '+e.model+' '+e.chip).toLowerCase().includes(t)));
+  let h='<table><thead><tr><th>#</th><th>Brand</th><th>Socket</th><th>Channel</th><th>Segment</th><th>Start</th><th>End</th><th>Model</th><th>Chip</th><th>Vendor</th><th>Quantity (Mu)</th><th>Updated</th><th>Actions</th></tr></thead><tbody>';
+  list.forEach((e,i)=>h+=`<tr><td>${i+1}</td><td>${esc(e.oem)}</td><td class="left">${esc(e.socket)}</td><td>${esc(e.channel)}</td><td>${esc(e.segment)}</td><td>${e.sy}/${e.sm}</td><td>${e.ey}/${e.em}</td><td>${esc(e.model)}</td><td>${esc(e.chip)}</td><td><span class="chip ${e.vendor}">${vl(e.vendor)}</span></td><td>${fmtV(e.vol)}</td><td>${esc(e.updatedAt)}</td><td><span class="act edit" onclick="editEntry(${e.id})">Edit</span><span class="act" onclick="deleteEntry(${e.id})">Delete</span></td></tr>`);
+  h+='</tbody></table>';if(!list.length)h='<div style="padding:30px;color:#888">No matching data</div>';
+  $('raw-table-wrap').innerHTML=h}
+
+/* ============ Chip comparison ============ */
+function renderChipView(){
+  const v=$('chip-f-vendor').value,t=$('chip-f-text').value.trim().toLowerCase();let a=+$('chip-f-yfrom').value,b=+$('chip-f-yto').value;if(a>b)[a,b]=[b,a];
+  const g={};
+  entries.forEach(e=>{if(v&&e.vendor!==v)return;if(t&&!(e.chip+' '+e.oem+' '+e.socket).toLowerCase().includes(t))return;
+    const vol=volRange(e,a,b);if(!vol)return;const k=e.chip+'|'+e.vendor;(g[k]=g[k]||{chip:e.chip,vendor:e.vendor,total:0,items:[]});g[k].total+=vol;g[k].items.push({e,vol})});
+  const rows=Object.values(g).sort((x,y)=>y.total-x.total);
+  let h='<table><thead><tr><th>Chip</th><th>Vendor</th><th>Total (Mu)</th><th class="left">Models using it (Brand / Socket / Model · Mu)</th></tr></thead><tbody>';
+  rows.forEach(r=>h+=`<tr><td style="font-family:var(--mono);font-weight:700">${esc(r.chip)||'—'}</td><td><span class="chip ${r.vendor}">${vl(r.vendor)}</span></td><td><b>${fmtV(r.total)}</b></td><td class="left" style="white-space:normal;line-height:1.6">${r.items.map(i=>`${esc(i.e.oem)} / ${esc(i.e.socket)} / ${esc(i.e.model)} · ${fmtV(i.vol)}`).join('<br>')}</td></tr>`);
+  h+='</tbody></table>';if(!rows.length)h='<div style="padding:30px;color:#888">No matching data</div>';
+  $('chip-table-wrap').innerHTML=h}
+
+/* ============ Brand vs. vendor comparison ============ */
+function renderOemVendorView(){
+  let a=+$('oemv-f-yfrom').value,b=+$('oemv-f-yto').value;if(a>b)[a,b]=[b,a];
+  const oems=[...new Set(entries.map(e=>e.oem))],tab={};
+  oems.forEach(o=>{tab[o]={};VENDORS.forEach(v=>tab[o][v]=0)});
+  entries.forEach(e=>{tab[e.oem][e.vendor]+=volRange(e,a,b)});
+  let h='<table><thead><tr><th>Brand</th>'+VENDORS.map(v=>`<th><span class="chip ${v}">${VLABEL[v]}</span></th>`).join('')+'<th>Total (Mu)</th><th>Vendor share</th></tr></thead><tbody>';
+  const colT={};VENDORS.forEach(v=>colT[v]=0);let all=0;
+  oems.forEach(o=>{const tot=VENDORS.reduce((s,v)=>s+tab[o][v],0);all+=tot;VENDORS.forEach(v=>colT[v]+=tab[o][v]);
+    h+=`<tr><td style="font-weight:700">${esc(o)}</td>${VENDORS.map(v=>`<td>${tab[o][v]?fmtV(tab[o][v]):'–'}</td>`).join('')}<td><b>${fmtV(tot)}</b></td><td>${bar(tab[o],tot)}</td></tr>`});
+  h+=`<tr class="total-row"><td>Overall</td>${VENDORS.map(v=>`<td>${fmtV(colT[v])}</td>`).join('')}<td>${fmtV(all)}</td><td>${bar(colT,all)}</td></tr></tbody></table>`;
+  $('oemvendor-table-wrap').innerHTML=h}
+function bar(o,tot){if(!tot)return '';return '<div class="vshare-bar">'+VENDORS.filter(v=>o[v]>0).map(v=>{const p=o[v]/tot*100;return `<div class="vshare-seg" style="width:${p}%;background:#${VENDOR_HEX[v]}" title="${VLABEL[v]} ${p.toFixed(1)}%">${p>=9?p.toFixed(0)+'%':''}</div>`}).join('')+'</div>'}
+
+/* ============ Change comparison / update ============ */
+const diffKey=e=>[e.oem,e.socket,e.model,e.chip].join('|');
+const CMP=['channel','segment','sy','sm','ey','em','vendor','vol'];
+const LBL={channel:'Channel',segment:'Segment',sy:'Start year',sm:'Start month',ey:'End year',em:'End month',vendor:'Vendor',vol:'Quantity (Mu)'};
+function computeDiff(prev,cur){
+  const pm=new Map(prev.map(e=>[diffKey(e),e])),cm=new Map(cur.map(e=>[diffKey(e),e]));
+  const added=[],removed=[],changed=[];
+  cm.forEach((e,k)=>{if(!pm.has(k))added.push(e)});pm.forEach((e,k)=>{if(!cm.has(k))removed.push(e)});
+  cm.forEach((e,k)=>{if(pm.has(k)){const p=pm.get(k),f=CMP.filter(x=>String(p[x]??'')!==String(e[x]??''));if(f.length)changed.push({old:p,neu:e,f})}});
+  return {added,removed,changed}}
+const label=e=>`${esc(e.oem)} / ${esc(e.socket)} / ${esc(e.model)}${e.chip?` (${esc(e.chip)})`:''}`;
+const dv=(f,x)=>f==='vendor'?vl(x):x;
+function diffHtml(d){
+  if(!d.added.length&&!d.removed.length&&!d.changed.length)return '<p class="modal-hint">No changes.</p>';
+  let h='';
+  if(d.added.length)h+=`<div class="diff-sec"><h3>+ ${d.added.length} added</h3>${d.added.map(e=>`<div class="diff-row diff-add">${label(e)}</div>`).join('')}</div>`;
+  if(d.removed.length)h+=`<div class="diff-sec"><h3>🗑 ${d.removed.length} deleted</h3>${d.removed.map(e=>`<div class="diff-row diff-del">${label(e)}</div>`).join('')}</div>`;
+  if(d.changed.length)h+=`<div class="diff-sec"><h3>✏ ${d.changed.length} modified</h3>${d.changed.map(c=>`<div class="diff-row diff-chg"><b>${label(c.neu)}</b><br>${c.f.map(f=>`${LBL[f]}: <span class="diff-old">${esc(dv(f,c.old[f]))}</span> → ${esc(dv(f,c.neu[f]))}`).join('; ')}</div>`).join('')}</div>`;
+  return h}
+function openUpdateDiff(){$('diff-body').innerHTML=diffHtml(computeDiff(baseline,entries));$('diff-overlay').hidden=false}
+function closeUpdateDiff(){$('diff-overlay').hidden=true}
+function confirmUpdateDiff(){lastDiff=computeDiff(baseline,entries);baseline=JSON.parse(JSON.stringify(entries));closeUpdateDiff();toast('Updated (demo: only the in-page baseline version is updated)');if(curTab==='lastchange')renderLastChange()}
+function renderLastChange(){
+  if(!lastDiff)lastDiff=computeDiff(JSON.parse(JSON.stringify(baseline)),entries);
+  $('lastchange-wrap').innerHTML=`<div style="border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:#fcfcfb"><h2 style="margin:0 0 6px;font-size:15px">Changes in the last update</h2>${diffHtml(lastDiff)}</div>`}
+// Initial demo: treat the difference between the starting baseline and the current state as the "last changes"
+lastDiff=computeDiff(baseline,entries);baseline=JSON.parse(JSON.stringify(entries));
+
+/* ============ Excel / paste import ============ */
+function buildRows(){return entries.map(e=>({'Brand':e.oem,'Socket':e.socket,'Channel':e.channel||'','Segment':e.segment||'','Start year':e.sy,'Start month':e.sm,'End year':e.ey,'End month':e.em,'Model':e.model,'Chip':e.chip,'Vendor':vl(e.vendor),'Quantity (Mu)':e.vol,'Updated':e.updatedAt}))}
+function exportExcel(){
+  const ws=XLSX.utils.json_to_sheet(buildRows());ws['!cols']=[8,12,8,10,6,6,6,6,14,10,10,10,12].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Raw data');
+  XLSX.writeFile(wb,`Socket_Demo_${today().replace(/-/g,'')}.xlsx`)}
+function triggerImport(){$('import-file').click()}
+const norm=s=>String(s).replace(/[\s()（）]/g,'').toLowerCase();
+function getVal(row,...names){const keys=Object.keys(row);for(const n of names){const hit=keys.find(k=>norm(k)===norm(n));if(hit!==undefined)return row[hit]}return undefined}
+function parseRowsToEntries(rows){
+  const out=[];
+  rows.forEach(r=>{
+    const oem=getVal(r,'Brand','oem'),socket=getVal(r,'Socket'),model=getVal(r,'Model','model');if(!oem||!socket||!model)return;
+    const vendor=String(getVal(r,'Vendor','vendor')||'Other').trim();
+    const vk=VENDORS.find(k=>k===vendor||VLABEL[k]===vendor||VLABEL[k].replace(/\s/g,'')===vendor.replace(/\s/g,''))||'VX';
+    out.push({id:seq++,oem:String(oem).trim(),socket:String(socket).trim(),channel:String(getVal(r,'Channel')||'Offline'),segment:String(getVal(r,'Segment')||''),
+      sy:+getVal(r,'Start year','sy'),sm:+getVal(r,'Start month','sm'),ey:+getVal(r,'End year','ey'),em:+getVal(r,'End month','em'),
+      model:String(model).trim(),chip:String(getVal(r,'Chip','chip')||''),vendor:vk,vol:+(getVal(r,'Quantity (Mu)','vol','Quantity')||0),mv:null,action:'Imported',updatedAt:today()})});
+  return out.filter(e=>e.sy&&e.sm&&e.ey&&e.em)}
+function importExcel(inp){
+  const f=inp.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'array'});const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);const list=parseRowsToEntries(rows);
+    if(!list.length){alert('No valid data found. Please check the column names.');return}
+    if(!confirm(`This will replace all current data with ${list.length} entries. Continue?`))return;
+    entries=list;groupEntriesByBrand();render();toast(`Imported ${list.length} entries`)}catch(err){alert('Import failed: '+err.message)}inp.value=''};
+  rd.readAsArrayBuffer(f)}
+function openPasteImport(){$('paste-textarea').value='';$('paste-preview').innerHTML='';$('paste-overlay').hidden=false}
+function closePasteImport(){$('paste-overlay').hidden=true}
+function runPasteImport(){
+  const lines=$('paste-textarea').value.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length){alert('Please paste some data first');return}
+  const rows=lines.map(l=>l.split('\t'));
+  const hasHeader=isNaN(+rows[0][4]);const data=hasHeader?rows.slice(1):rows;
+  const keys=['Brand','Socket','Channel','Segment','Start year','Start month','End year','End month','Model','Chip','Vendor','Quantity (Mu)'];
+  const objs=data.map(c=>{const o={};keys.forEach((k,i)=>o[k]=(c[i]??'').trim());return o});
+  const list=parseRowsToEntries(objs);
+  if(!list.length){alert('No valid data could be parsed. Please check the column order.');return}
+  $('paste-preview').innerHTML=`<p class="modal-hint">Parsed ${list.length} entries (first 5 shown):</p><table class="preview-tbl"><tr><th>Brand</th><th>Socket</th><th>From</th><th>To</th><th>Model</th><th>Vendor</th><th>Mu</th></tr>${list.slice(0,5).map(e=>`<tr><td>${esc(e.oem)}</td><td>${esc(e.socket)}</td><td>${e.sy}/${e.sm}</td><td>${e.ey}/${e.em}</td><td>${esc(e.model)}</td><td>${vl(e.vendor)}</td><td>${e.vol}</td></tr>`).join('')}</table><div class="actions"><button class="primary" id="paste-confirm">Confirm: replace all data</button></div>`;
+  $('paste-confirm').onclick=()=>{entries=list;groupEntriesByBrand();closePasteImport();render();toast(`Imported ${list.length} entries`)}}
+function resetDemo(){if(!confirm('Restore the sample data? Your current changes will be lost.'))return;seq=1;entries=SEED.map(r=>mk(r));baseline=JSON.parse(JSON.stringify(entries));lastDiff=null;cancelEdit();render();toast('Sample data restored')}
+
+/* ============ Startup ============ */
+initStatic();initForm();refreshYearSelects();adjustFormBodyHeight();render();
+</script>
+</body>
+</html>
